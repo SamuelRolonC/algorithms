@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace DynamicArray
+namespace CodeLab.DataStructure
 {
     public class DoublyLinkedList<T> : IEnumerable<T> where T : class
     {
@@ -11,7 +11,7 @@ namespace DynamicArray
         public void Clear()
         {
             var traverser = Head;
-            while(traverser != null)
+            while (traverser != null)
             {
                 var next = traverser.Next;
                 traverser.Previous = null;
@@ -81,7 +81,7 @@ namespace DynamicArray
             {
                 AddFirst(data);
                 return;
-            } 
+            }
             else if (index == Size - 1)
             {
                 AddLast(data);
@@ -89,7 +89,7 @@ namespace DynamicArray
             }
 
             var temp = Head;
-            for(var i = 0; i < index - 1; i++)
+            for (var i = 0; i < index - 1; i++)
             {
                 temp = temp?.Next;
             }

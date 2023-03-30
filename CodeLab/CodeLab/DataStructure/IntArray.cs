@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace DynamicArray
+namespace CodeLab.DataStructure
 {
     public class IntArray : IEnumerable<int>
     {
@@ -31,8 +31,8 @@ namespace DynamicArray
             Capacity = array.Length;
             Length = array.Length;
 
-            this.Array = new int[Capacity];
-            array.CopyTo(this.Array, 0);
+            Array = new int[Capacity];
+            array.CopyTo(Array, 0);
         }
 
         public int Size()
@@ -163,7 +163,7 @@ namespace DynamicArray
         private void Setup(int capacity)
         {
             if (capacity < 0) throw new ArgumentOutOfRangeException(nameof(capacity));
-            this.Capacity = capacity;
+            Capacity = capacity;
             Array = new int[capacity];
         }
     }
