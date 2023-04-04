@@ -3,11 +3,12 @@ using System.Text;
 
 namespace CodeLab.DataStructure
 {
-    public class DoublyLinkedListInt : IEnumerable
+    public class LinkedList<T> : IEnumerable<T> where T : IEquatable<T>
     {
+#pragma warning disable CS8600, CS8602, CS8603, CS8604, CS8619, CS8620
         private int Size = 0;
-        private Node? Head;
-        private Node? Tail;
+        private Node<T?>? Head;
+        private Node<T?>? Tail;
 
         public void Clear()
         {
@@ -15,9 +16,8 @@ namespace CodeLab.DataStructure
             while (traverser != null)
             {
                 var next = traverser.Next;
-                traverser.Previous = null;
                 traverser.Next = null;
-                traverser.Data = 0;
+                traverser.Data = default(T);
                 traverser = next;
             }
             Head = null;
@@ -35,44 +35,43 @@ namespace CodeLab.DataStructure
             return Size == 0;
         }
 
-        public void Add(int element)
+        public void Add(T element)
         {
             AddLast(element);
         }
 
-        public void AddLast(int element)
+        public void AddLast(T element)
         {
             if (IsEmpty())
             {
-                Head = new Node(element, null, null);
+                Head = new Node<T>(element, null);
                 Tail = Head;
             }
             else
             {
                 if (Tail == null) throw new NullNodeLinkedListException("tail");
-                Tail.Next = new Node(element, Tail, null);
-                Tail = Tail?.Next;
+                Tail.Next = new Node<T>(element, null);
+                Tail = Tail.Next;
             }
             Size++;
         }
 
-        public void AddFirst(int element)
+        public void AddFirst(T element)
         {
             if (IsEmpty())
             {
-                Head = new Node(element, null, null);
+                Head = new Node<T>(element, null);
                 Tail = Head;
             }
             else
             {
-                if (Head == null) throw new NullNodeLinkedListException("head");
-                Head.Previous = new Node(element, null, Head);
-                Head = Head.Previous;
+                var newNode = new Node<T>(element, Head);
+                Head = newNode;
             }
             Size++;
         }
 
-        public void AddAt(int index, int data)
+        public void AddAt(int index, T data)
         {
             if (index < 0 || index >= Size)
             {
@@ -95,122 +94,107 @@ namespace CodeLab.DataStructure
             {
                 temp = temp?.Next;
             }
-            var newNode = new Node(data, temp, temp?.Next);
-            if (temp?.Next == null) throw new NullReferenceException($"Null node was found while adding a element to the list.");
-            temp.Next.Previous = newNode;
+            var newNode = new Node<T>(data, temp?.Next);
             temp.Next = newNode;
 
             Size++;
         }
 
-        public int PeekFirst()
+        public T PeekFirst()
         {
-            if (IsEmpty()) throw new EmptyLinkedListException();
-            if (Head == null) throw new NullNodeLinkedListException("head");
+            if (IsEmpty()) throw new Exception("Trying to access an empty list.");
             return Head.Data;
         }
 
-        public int PeekLast()
+        public T PeekLast()
         {
-            if (IsEmpty()) throw new EmptyLinkedListException();
-            if (Tail == null) throw new NullNodeLinkedListException("tail");
+            if (IsEmpty()) throw new Exception("Trying to access an empty list.");
             return Tail.Data;
         }
 
-        public int RemoveFirst()
+        public T RemoveFirst()
         {
             if (IsEmpty()) throw new EmptyLinkedListException();
 
-            if (Head == null) throw new NullNodeLinkedListException("head");
             var data = Head.Data;
             Head = Head.Next;
             --Size;
 
             if (IsEmpty())
                 Tail = null;
-            else
-            {
-                if (Head == null) throw new NullNodeLinkedListException("head");
-                Head.Previous = null;
-            }
 
             return data;
         }
 
-        public int RemoveLast()
+        public T RemoveLast()
         {
             if (IsEmpty()) throw new EmptyLinkedListException();
 
-            if (Tail == null) throw new NullNodeLinkedListException("tail");
             var data = Tail.Data;
-            Tail = Tail.Previous;
+            if (Size == 1)
+                Tail = null;
+            else
+            {
+                var temp = Head;
+                for(var i = 0; i < Size - 2; i++)
+                {
+                    temp = temp.Next;
+                }
+                Tail = temp;
+            }
             --Size;
 
             if (IsEmpty())
                 Head = null;
             else
-            {
-                if (Tail == null) throw new NullNodeLinkedListException("tail");
                 Tail.Next = null;
-            }
 
             return data;
         }
 
-        private int Remove(Node node)
+        private T Remove(Node<T> node)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
 
-            if (node.Previous == null) return RemoveFirst();
+            if (node == Head) return RemoveFirst();
             if (node.Next == null) return RemoveLast();
-
-            node.Next.Previous = node.Previous;
-            node.Previous.Next = node.Next;
-
-            var data = node.Data;
-            node.Previous = null;
-            node.Next = null;
+            
+            var temp = Head;
+            for (var i = 0; i < Size - 2; i++)
+            {
+                if (node == temp.Next)
+                    break;
+                temp = temp.Next;
+            }
+            temp.Next = temp.Next.Next;
 
             --Size;
 
-            return data;
+            return node.Data;
         }
 
-        public int RemoveAt(int index)
+        public T RemoveAt(int index)
         {
             if (index < 0 || index >= Size)
                 throw new ArgumentOutOfRangeException(nameof(index));
 
-            int i;
-            Node? traverser;
+            if (index == 0) return Remove(Head);
+            if (index == Size - 1) return Remove(Tail);
 
-            if (index < Size / 2)
-            {
-                if (Head == null) throw new NullNodeLinkedListException("head");
-                for (i = 0, traverser = Head; i != index; i++)
-                {
-                    traverser = traverser?.Next;
-                }
-            }
-            else
-            {
-                if (Tail == null) throw new NullNodeLinkedListException("tail");
-                for (i = Size - 1, traverser = Tail; i != index; i--)
-                {
-                    traverser = traverser?.Previous;
-                }
-            }
-            if (traverser == null) throw new NullReferenceException($"Null node was found while removing a element of the list.");
+            int i;
+            Node<T> traverser;
+
+            for (i = 0, traverser = Head; i != index; i++)
+                traverser = traverser.Next;
+
             return Remove(traverser);
         }
 
-        public bool Remove(int value)
+        public bool Remove(T value)
         {
-            var traverser = Head;
-
-            for (traverser = Head; traverser != null; traverser = traverser.Next)
+            for (var traverser = Head; traverser != null; traverser = traverser.Next)
             {
-                if (value == traverser.Data)
+                if (value.Equals(traverser.Data))
                 {
                     Remove(traverser);
                     return true;
@@ -219,14 +203,14 @@ namespace CodeLab.DataStructure
             return false;
         }
 
-        public int IndexOf(int value)
+        public int IndexOf(T value)
         {
             var index = 0;
             var traverser = Head;
 
             for (; traverser != null; traverser = traverser.Next, index++)
             {
-                if (value == traverser.Data)
+                if (value.Equals(traverser.Data))
                 {
                     return index;
                 }
@@ -234,7 +218,7 @@ namespace CodeLab.DataStructure
             return -1;
         }
 
-        public bool Contains(int value)
+        public bool Contains(T value)
         {
             return IndexOf(value) >= 0;
         }
@@ -246,20 +230,19 @@ namespace CodeLab.DataStructure
 
         private void ReverseIterative()
         {
-            Node? prev = null, current = Head, next = null;
+            Node<T> previous = null, current = Head, next = null;
             Tail = Head;
             while (current != null)
             {
                 next = current.Next;
-                current.Next = prev;
-                current.Previous = next;
-                prev = current;
+                current.Next = previous;
+                previous = current;
                 current = next;
             }
-            Head = prev;
+            Head = current;
         }
 
-        public IEnumerator<int> GetEnumerator()
+        public IEnumerator<T> GetEnumerator()
         {
             var traverser = Head;
 
@@ -280,7 +263,7 @@ namespace CodeLab.DataStructure
 
             StringBuilder sb = new StringBuilder();
             sb.Append("[ ");
-            Node? traverser = Head;
+            Node<T> traverser = Head;
 
             while (traverser != null)
             {
@@ -292,37 +275,6 @@ namespace CodeLab.DataStructure
             sb.Append(" ]");
             return sb.ToString();
         }
-    }
-
-    internal class Node
-    {
-        public int Data;
-        public Node? Previous;
-        public Node? Next;
-
-        public Node(int data, Node? previous, Node? next)
-        {
-            Data = data;
-            Previous = previous;
-            Next = next;
-        }
-
-        override public string ToString()
-        {
-            return Data.ToString();
-        }
-    }
-
-    [Serializable]
-    public class EmptyLinkedListException : Exception
-    {
-        public EmptyLinkedListException() : base("Trying to access an empty list.") { }
-    }
-
-    [Serializable]
-    public class NullNodeLinkedListException : Exception
-    {
-        public NullNodeLinkedListException(string node) : base($"List's {node} node is null.") { }
+#pragma warning restore CS8600, CS8602, CS8603, CS8604, CS8619, CS8620
     }
 }
-

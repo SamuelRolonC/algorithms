@@ -2,13 +2,13 @@
 
 namespace CodeLab.Excercices
 {
-    public class ExcercicesDoublyLinkedListInt : Excercices, IExcercices
+    public class ExcercicesLinkedList : Excercices, IExcercices
     {
         public void Run()
         {
             Initialize(this);
 
-            var linkedList = new DoublyLinkedListInt { 1, 3, 4 };
+            var linkedList = new DataStructure.LinkedList<char> {  };
 
             Console.WriteLine($"{linkedList}");
             Console.WriteLine($"Head: {linkedList.PeekFirst()} - Tail: {linkedList.PeekLast()}");
