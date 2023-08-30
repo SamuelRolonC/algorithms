@@ -5,5 +5,5 @@ using CodeLab.Excercices;
 Console.WriteLine("Initializing CodeLab...");
 Console.WriteLine("");
 
-var excercise = new ExcercicesStack();
+var excercise = new ExcercicesCaesarCipher();
 excercise.Run();
